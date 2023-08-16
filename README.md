@@ -33,12 +33,13 @@ This is my personal code and study progress of the [handmade hero](https://handm
 - Creating a Device Context using `CreateCompatibleDC`
 - Using `DeleteObject` to release the buffer when reallocated
 
-#### Tangent
-> at the end of day 3 I wanted to use the buffer to get something on the screen so I experimented a little on my own, the following is wrong and will most likely be scrapped on Day 004
+#### Tangent #1
+> at the end of day 3 I wanted to use the buffer to get something on the screen so I experimented a little on my own, the following is just some tinkering and will most likely be scrapped on Day 004
 - Created a `RenderPixel(int x, int y, int r, int g, int b)` function
 - It uses the windows `COLORREF` definition which is a uint32
 - The color value is passed using the windows `RGB()` macro
 - Used it to render a simple sine function across the screen
+- Set `biHeight` to negative width to get a top-down coordinate where (0,0) is at top-left corner
 ```C
 // Definition
 internal void
@@ -57,3 +58,16 @@ for (int i = 0; i < width; ++i)
     RenderPixel(i, y);
 }
 ```
+
+### Day 004: Animating the Backbuffer
+- Using `VirtualAlloc` to allocate the bitmap memory ourselves instead of `CreateDIBSection`
+- Using `VirtualFree` to free memory allocated
+- Learn about `VirtualProtect` which helps in debugging __use-after-free__ errors
+- Setting `biHeight` to negative to get top-left origin (I found this already during [#Tangent #1](#tangent-1))
+- Pass (0,0) for x and y in `StretchDIBits` and window dimensions in dest dimensions, bitmap dimensions in src dimensions
+- Render a simple gradient. Pixel has the form `0x00RRGGBB` where a padding byte is left for memory alignment
+- Use `PeekMessage` instead of `GetMessage` so it doesn't block
+- Draw the gradient and pass changing offsets to animate it in the main loop
+- Call `Win32UpdateWindow` in the main loop to update and draw.
+  -  Handle deviceContext with `GetDC(window)` and `ReleaseDC(window, deviceContext)`
+  -  `GetClientRect` to get window `RECT` and dimensions
