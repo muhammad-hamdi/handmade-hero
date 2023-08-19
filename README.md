@@ -71,3 +71,14 @@ for (int i = 0; i < width; ++i)
 - Call `Win32UpdateWindow` in the main loop to update and draw.
   -  Handle deviceContext with `GetDC(window)` and `ReleaseDC(window, deviceContext)`
   -  `GetClientRect` to get window `RECT` and dimensions
+
+### Day 005: Windows Graphics Review
+- `HREDRAW` and `VREDRAW` are used to tell Windows to redraw the whole window
+- Pulled the bitmap global variables into `win32_offscreen_buffer` struct
+- Pull the `GetClientRect` calls and calculation into a function that returns `win32_window_dimensions` struct
+- Create the back buffer just once with constant width and height, move it out of `WM_SIZE`
+- The stack grows down starting from WinMain, we can change it's size by specifying the `/F<num_of_bytes>` argument in the build command
+- `OWNDC` is used to have a single persistent Device Context `HDC` per Window `HWND` to use across the program
+
+#### Tangent #2
+_As the new buffer had constant size and was being stretched it had some visual artifacts of black lines showing for the stretched color data, I looked into it and found about [Stretch Modes](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setstretchbltmode) which are set using `SetStretchBltMode`, `COLORONCOLOR` (or `STRETCH_DELETESCANS`) is used to preserve color in bitmaps so I've gone ahead and set it and it fixed the problem._
