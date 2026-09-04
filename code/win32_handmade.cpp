@@ -27,7 +27,6 @@ struct win32_offscreen_buffer {
     int width;
     int height;
     int pitch;
-    int bytesPerPixel;
 };
 
 global_variable bool running;
@@ -69,9 +68,9 @@ Win32ResizeDIBSection(win32_offscreen_buffer *buffer, int width, int height)
 
     buffer->width = width;
     buffer->height = height;
-    buffer->bytesPerPixel = 4;
+    int bytesPerPixel = 4;
 
-    buffer->pitch = buffer->width * buffer->bytesPerPixel;
+    buffer->pitch = buffer->width * bytesPerPixel;
 
     buffer->info.bmiHeader.biSize = sizeof(buffer->info.bmiHeader);
     buffer->info.bmiHeader.biWidth = buffer->width;
@@ -85,7 +84,7 @@ Win32ResizeDIBSection(win32_offscreen_buffer *buffer, int width, int height)
     buffer->info.bmiHeader.biClrUsed = 0;
     buffer->info.bmiHeader.biClrImportant = 0;
 
-    int bitmapMemorySize = (buffer->width*buffer->height)*buffer->bytesPerPixel;
+    int bitmapMemorySize = (buffer->width*buffer->height)*bytesPerPixel;
 
     buffer->memory = VirtualAlloc(0, bitmapMemorySize, MEM_COMMIT, PAGE_READWRITE);
 }
@@ -116,7 +115,7 @@ Win32MainWindowCallback(
 {
     LRESULT result = 0;
     switch(message) {
-        case WM_CLOSE: 
+        case WM_CLOSE:
         {
             running = false;
         } break;
@@ -182,7 +181,7 @@ int CALLBACK WinMain(
         0,
         instance,
         0);
-    
+
     if(window)
     {
         HDC deviceContext = GetDC(window);
@@ -198,15 +197,14 @@ int CALLBACK WinMain(
                 if(message.message == WM_QUIT) {
                     running = false;
                 }
-                TranslateMessage(&message); 
-                DispatchMessage(&message); 
+                TranslateMessage(&message);
+                DispatchMessage(&message);
             }
 
             RenderTestGradient(mainBackBuffer, blueOffset, greenOffset);
 
             win32_window_dimensions dimensions = Win32GetWindowDimensions(window);
             Win32CopyBufferToWindow(&mainBackBuffer, deviceContext, dimensions.width, dimensions.height);
-            ReleaseDC(window, deviceContext);
 
             ++blueOffset;
             ++greenOffset;
